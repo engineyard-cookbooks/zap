@@ -132,7 +132,7 @@ class Chef
           if @new_resource.immediately
             r.run_action(act)
           else
-            @run_context.resource_collection << r
+            @run_context.resource_collection.all_resources << r
           end
           Chef::Log.debug "#{@new_resource} zapping #{r}"
           @new_resource.updated_by_last_action(true)
@@ -145,6 +145,9 @@ class Chef
       r = @klass.first.new(name, @run_context)
       r.cookbook_name = @new_resource.cookbook_name
       r.recipe_name = @new_resource.recipe_name
+      if r.respond_to?(:manage_symlink_source)
+        r.manage_symlink_source(@new_resource.manage_symlink_source)
+      end
       r.action(act)
       r
     end

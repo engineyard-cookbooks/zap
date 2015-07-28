@@ -32,13 +32,18 @@ class Chef
       # Set the resource name and provider
       @resource_name = :zap_directory
       @provider = Provider::ZapDirectory
-      @klass = [Chef::Resource::File, Chef::Resource::Template]
+      @klass = [Chef::Resource::File, Chef::Resource::Link, Chef::Resource::Template]
       @recursive = false
+      @manage_symlink_source = false
       @path = ''
     end
 
     def recursive(arg = nil)
       set_or_return(:recursive, arg, equal_to: [true, false], default: false)
+    end
+
+    def manage_symlink_source(arg = nil)
+      set_or_return(:manage_symlink_source, arg, equal_to: [true, false], default: false)
     end
 
     def path(arg = nil)

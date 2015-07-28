@@ -21,6 +21,14 @@ describe 'test::directory' do
                    .with('/home/user2/.ssh')
                    .and_return(%w[. .. authorized_keys known_hosts])
 
+    allow(Dir).to receive(:entries)
+                   .with('/data/downloads')
+                   .and_return(%w[. .. linux-i-swear.torrent ubuntu.torrent redhat.torrent osx.torrent android.torrent])
+
+    allow(Dir).to receive(:entries)
+                   .with('/data/downloads2')
+                   .and_return(%w[. .. windows.torrent windows10.torrent])
+
     allow(Dir).to receive(:glob).and_call_original
     allow(Dir).to receive(:glob)
                    .with('/home/*/.ssh')
@@ -157,6 +165,25 @@ describe 'test::directory' do
       expect(runner).to delete_file('/home/user1/.ssh/known_hosts')
       expect(runner).to delete_file('/home/user2/.ssh/authorized_keys')
       expect(runner).to delete_file('/home/user2/.ssh/known_hosts')
+    end
+  end
+
+  context 'uses path and manages symlink' do
+    let :runner do
+      ChefSpec::SoloRunner.new(step_into: 'zap_directory').converge(described_recipe)
+    end
+
+    it 'converges' do
+      expect(runner).to create_link('/data/downloads/osx.torrent')
+                                  .with(to: '/data/downloads2/windows.torrent')
+      expect(runner).to delete_file('/data/downloads/android.torrent')
+      #expect(runner).to delete_file('/data/downloads2/windows10.torrent')
+
+      expect(runner).to delete_file('/data/downloads/ubuntu.torrent')
+      expect(runner).to delete_file('/data/downloads/redhat.torrent')
+      expect(runner).not_to delete_file('/data/downloads/linux-i-swear.torrent')
+      expect(runner).not_to delete_file('/data/download2/windows.torrent')
+      expect(runner).not_to delete_link('/data/downloads/osx.torrent')
     end
   end
 end
